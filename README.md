@@ -45,4 +45,23 @@ uvicorn app.main:app --reload
 
 Lỗi hay gặp ở chuỗi kết nối, nhớ check sự tồn tại của DB, role(user,pass) 
 
-5/ Chạy fron react 
+5/ Chạy front react 
+
+npm install 
+
+npm start 
+
+6/ Công nghệ 
+
+Fontend react viev 
+
+Backend FastAPI 
+
+DB Postgres 
+
+7/ Docker 
+
+docker-compose up --build
+
+docker-compose down -v
+
