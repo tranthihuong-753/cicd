@@ -1,23 +1,48 @@
 # cicd
 
-1/ Dùng cookiecutter, template để tạo POM cho dự án 
-
-1.1/ Chuẩn bị môi trường ảo 
+1/ Chuẩn bị môi trường ảo 
 
 python -m venv venv 
 
 venv\Scripts\Activate.ps1
 
-1.2/ Tải cookiecutter 
+2/ Cấu trúc dự án 
 
-pip install cookiecutter
+crud-project/
 
-1.3/ Dùng template tạo dự án 
+├── backend/
 
-cookiecutter https://github.com/tiangolo/full-stack-fastapi-postgresql
+│   ├── app/
 
--> Không còn tương thích , tôi tải 1 dự án về luôn cho nhanh 
+│   │   ├── main.py
 
-git clone https://github.com/fastapi/full-stack-fastapi-template.git
+│   │   ├── models.py
+
+│   │   ├── schemas.py
+
+│   │   ├── crud.py
+
+│   │   └── database.py
+
+│   └── requirements.txt
+
+├── frontend/
+
+│   └── [React App]
+
+├── docker-compose.yml
 
 
+3/ Chuỗi kết nối tới DB postgre 
+
+dialect+driver://username:password@host:port/database
+
+dialect+driver://postgres:123456@db:5432/postgres
+
+4/ Chạy back FastAPI 
+
+uvicorn app.main:app --reload
+
+Lỗi hay gặp ở chuỗi kết nối, nhớ check sự tồn tại của DB, role(user,pass) 
+
+5/ Chạy fron react 
