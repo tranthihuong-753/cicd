@@ -65,3 +65,11 @@ docker-compose up --build
 
 docker-compose down -v
 
+docker tag <image_name>:<old_tag> <new_name>:<new_tag>
+
+docker tag cicd-backend:latest huongduong/myapp-frontend:latest
+
+docker push huongduong/cicd-backend:v1
+docker push huongduong/cicd-frontend:v1
+
+
