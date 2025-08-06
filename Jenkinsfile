@@ -67,23 +67,23 @@ pipeline {
         }
     }
 
-    // stage('Push Docker Images') {
-    //     steps {
-    //         withCredentials([usernamePassword(
-    //         credentialsId: 'from-docker-to-jenkins',
-    //         usernameVariable: 'DOCKERHUB_CREDENTIALS_USR',
-    //         passwordVariable: 'DOCKERHUB_CREDENTIALS_PSW'
-    //         )])
-    //         {
-    //         sh '''
-    //         echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin
-    //         docker push ${DOCKERHUB_CREDENTIALS_USR}/backend:${VERSION}
-    //         docker push ${DOCKERHUB_CREDENTIALS_USR}/frontend:${VERSION}
-    //         docker logout
-    //         '''
-    //         }
-    //     }
-    // }
+    stage('Push Docker Images') {
+        steps {
+            withCredentials([usernamePassword(
+            credentialsId: 'from-docker-to-jenkins',
+            usernameVariable: 'DOCKERHUB_CREDENTIALS_USR',
+            passwordVariable: 'DOCKERHUB_CREDENTIALS_PSW'
+            )])
+            {
+            sh '''
+            echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin
+            docker push ${DOCKERHUB_CREDENTIALS_USR}/backend:${VERSION}
+            docker push ${DOCKERHUB_CREDENTIALS_USR}/frontend:${VERSION}
+            docker logout
+            '''
+            }
+        }
+    }
 
     // stage('Tag Git (optional)') {
     //     when { // Nhớ dùng Multibranch Pipeline
