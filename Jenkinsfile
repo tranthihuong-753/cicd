@@ -35,7 +35,7 @@ pipeline {
 
                   sh '''
                   echo "📤 Gửi báo cáo lên SonarQube bằng Docker"
-                  docker run --rm -e SONAR_TOKEN=$SONAR_TOKEN -v "$(pwd):/usr/src" sonarsource/sonar-scanner-cli
+                  docker run --rm -e SONAR_TOKEN=$SONAR_TOKEN -v "$(pwd):/usr/src" sonarsource/sonar-scanner-cli -Dsonar.host.url=http://host.docker.internal:9000
                   '''
               }
           }
