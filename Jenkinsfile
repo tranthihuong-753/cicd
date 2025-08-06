@@ -86,19 +86,19 @@ pipeline {
     //     }
     // }
 
-    stage('Tag Git (optional)') {
-        when { // Nhớ dùng Multibranch Pipeline
-            expression { env.BRANCH_NAME == 'main' }
-        }
-        steps {
-            sh '''
-            git config user.name "tranthihuong-753"
-            git config user.email "dhhuongdhlt1@gmail.com"
-            git tag -a ${VERSION} -m "CI Build ${VERSION}"
-            git push origin ${VERSION}
-            '''
-        }
-    }
+    // stage('Tag Git (optional)') {
+    //     when { // Nhớ dùng Multibranch Pipeline
+    //         expression { env.BRANCH_NAME == 'main' }
+    //     }
+    //     steps {
+    //         sh '''
+    //         git config user.name "tranthihuong-753"
+    //         git config user.email "dhhuongdhlt1@gmail.com"
+    //         git tag -a ${VERSION} -m "CI Build ${VERSION}"
+    //         git push origin ${VERSION}
+    //         '''
+    //     }
+    // }
 
   }
 
