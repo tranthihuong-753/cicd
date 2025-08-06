@@ -5,6 +5,7 @@ pipeline {
     SONARQUBE_ENV = 'SonarQubeJenkins' // bạn đã cấu hình Sonar server
     VERSION = "v${BUILD_NUMBER}"
     BRANCH_NAME = "${params.BRANCH_NAME}"
+    SONAR_TOKEN = credentials('from-sonar-to-jenkins') 
   }
 
   stages {
@@ -14,35 +15,29 @@ pipeline {
       }
     }
 
-    
-    stage('SonarQube Scan') {
-        steps {
-            dir('backend') {
-            withSonarQubeEnv("${SONARQUBE_ENV}") {
-                sh'''
-                echo "Running SonarQube analysis for backend..."
-                #python -m venv venv
-                #venv/Scripts/activate
-                python -m pip install -r requirements.txt
+  stage('SonarQube Scan') {
+      steps {
+          dir('backend') {
+              withSonarQubeEnv("${SONARQUBE_ENV}") {
+                  sh 'echo JAVA_HOME=$JAVA_HOME'
+                  sh 'which java'
+                  sh 'java -version'
 
-                echo "Kiểm tra coding style..."
-                flake8 app || true  # Không làm fail pipeline nếu lỗi style
-                black --check app || true
-                mypy app || true    # nếu bạn đã type hinting
+                  sh '''
+                  echo "📦 Cài dependencies"
+                  python -m pip install -r requirements.txt
 
-                echo "Chạy test để tạo báo cáo coverage..."
-                pytest --cov=./ --cov-report=xml
+                  echo "🧪 Chạy test và tạo báo cáo coverage"
+                  pytest --cov=./ --cov-report=xml
 
+                  echo "📤 Gửi báo cáo lên SonarQube bằng Docker"
+                  docker run --rm -e SONAR_TOKEN=$SONAR_TOKEN -v "$(pwd):/usr/src" sonarsource/sonar-scanner-cli
+                  '''
+              }
+          }
+      }
+  }
 
-                echo "Gửi báo cáo lên SonarQube"
-                sonar-scanner -Dsonar.projectKey=crud-app -Dsonar.sources=. -Dsonar.python.coverage.reportPaths=coverage.xml
-                
-                '''
-            }
-            }
-        }
-    }
-    
     // stage('Build Frontend') {
     //   steps {
     //     dir('frontend') {
