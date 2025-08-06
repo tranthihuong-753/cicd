@@ -14,7 +14,6 @@ pipeline {
         git credentialsId: 'from-github-to-jenkins', url: 'https://github.com/tranthihuong-753/cicd.git', branch: 'main'
       }
     }
-  }
 
   stage('SonarQube Scan') {
       steps {
@@ -43,71 +42,71 @@ pipeline {
       }
   }
 
-  stage('Build Frontend') {
-    steps {
-      dir('frontend') {
-        sh 'npm install'
-        sh 'npm run build'
+    stage('Build Frontend') {
+      steps {
+        dir('frontend') {
+          sh 'npm install'
+          sh 'npm run build'
+        }
       }
     }
+
+    stage('Build Docker Images') {
+        steps {
+            withCredentials([usernamePassword(
+            credentialsId: 'from-docker-to-jenkins',
+            usernameVariable: 'DOCKERHUB_CREDENTIALS_USR',
+            passwordVariable: 'DOCKERHUB_CREDENTIALS_PSW'
+            )]) 
+            {
+            sh '''
+            docker build -t ${DOCKERHUB_CREDENTIALS_USR}/backend:${VERSION} ./backend
+            docker build -t ${DOCKERHUB_CREDENTIALS_USR}/frontend:${VERSION} ./frontend
+            '''
+            }
+        }
+    }
+
+    stage('Push Docker Images') {
+        steps {
+            withCredentials([usernamePassword(
+            credentialsId: 'from-docker-to-jenkins',
+            usernameVariable: 'DOCKERHUB_CREDENTIALS_USR',
+            passwordVariable: 'DOCKERHUB_CREDENTIALS_PSW'
+            )])
+            {
+            sh '''
+            echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin
+            docker push ${DOCKERHUB_CREDENTIALS_USR}/backend:${VERSION}
+            docker push ${DOCKERHUB_CREDENTIALS_USR}/frontend:${VERSION}
+            docker logout
+            '''
+            }
+        }
+    }
+
+    stage('Tag Git (optional)') {
+        when { // Nhớ dùng Multibranch Pipeline
+            expression { env.BRANCH_NAME == 'main' }
+        }
+        steps {
+            sh '''
+            git config user.name "tranthihuong-753"
+            git config user.email "dhhuongdhlt1@gmail.com"
+            git tag -a ${VERSION} -m "CI Build ${VERSION}"
+            git push origin ${VERSION}
+            '''
+        }
+    }
+
   }
 
-  stage('Build Docker Images') {
-      steps {
-          withCredentials([usernamePassword(
-          credentialsId: 'from-docker-to-jenkins',
-          usernameVariable: 'DOCKERHUB_CREDENTIALS_USR',
-          passwordVariable: 'DOCKERHUB_CREDENTIALS_PSW'
-          )]) 
-          {
-          sh '''
-          docker build -t ${DOCKERHUB_CREDENTIALS_USR}/backend:${VERSION} ./backend
-          docker build -t ${DOCKERHUB_CREDENTIALS_USR}/frontend:${VERSION} ./frontend
-          '''
-          }
-      }
-  }
-
-  stage('Push Docker Images') {
-      steps {
-          withCredentials([usernamePassword(
-          credentialsId: 'from-docker-to-jenkins',
-          usernameVariable: 'DOCKERHUB_CREDENTIALS_USR',
-          passwordVariable: 'DOCKERHUB_CREDENTIALS_PSW'
-          )])
-          {
-          sh '''
-          echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin
-          docker push ${DOCKERHUB_CREDENTIALS_USR}/backend:${VERSION}
-          docker push ${DOCKERHUB_CREDENTIALS_USR}/frontend:${VERSION}
-          docker logout
-          '''
-          }
-      }
-  }
-
-
-  stage('Tag Git (optional)') {
-      when { // Nhớ dùng Multibranch Pipeline
-          expression { env.BRANCH_NAME == 'main' }
-      }
-      steps {
-          sh '''
-          git config user.name "tranthihuong-753"
-          git config user.email "dhhuongdhlt1@gmail.com"
-          git tag -a ${VERSION} -m "CI Build ${VERSION}"
-          git push origin ${VERSION}
-          '''
-      }
-  }
-}{
-  post {
-      failure {
-      echo "❌ Build failed at stage ${STAGE_NAME}"
-      }
-      success {
-      echo "✅ Build & Push done: version ${VERSION}"
-      }
-  }
-
+    post {
+        failure {
+        echo "❌ Build failed at stage ${STAGE_NAME}"
+        }
+        success {
+        echo "✅ Build & Push done: version ${VERSION}"
+        }
+    }
 }
