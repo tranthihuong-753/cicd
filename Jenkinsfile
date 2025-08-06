@@ -100,7 +100,7 @@ pipeline {
           '''
       }
   }
-
+}{
   post {
       failure {
       echo "❌ Build failed at stage ${STAGE_NAME}"
@@ -109,4 +109,5 @@ pipeline {
       echo "✅ Build & Push done: version ${VERSION}"
       }
   }
+
 }
