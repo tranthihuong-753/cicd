@@ -32,30 +32,37 @@ pipeline {
     }
 
     stage('2. SonarQube Scan') {
-        steps {
-            dir('backend') {
-                withSonarQubeEnv("${SONARQUBE_ENV}") {
-                    sh 'echo JAVA_HOME=$JAVA_HOME'
-                    sh 'which java'
-                    sh 'java -version'
+      steps {
+        dir('backend') {
+          withSonarQubeEnv("${SONARQUBE_ENV}") {
+            sh 'echo JAVA_HOME=$JAVA_HOME'
+            sh 'which java'
+            sh 'java -version'
 
-                    sh '''
-                    echo "📦 Cài dependencies"
-                    python -m pip install -r requirements.txt
-                    '''
+            sh '''
+            echo "📦 Cài dependencies"
+            python -m pip install -r requirements.txt
+            '''
 
-                    sh'''
-                    echo "🧪 Chạy test và tạo báo cáo coverage"
-                    pytest --cov=./ --cov-report=xml
-                    '''
+            sh '''
+            echo "🧪 Chạy test và tạo báo cáo coverage"
+            pytest --cov=./ --cov-report=xml
+            '''
 
-                    sh '''
-                    echo "📤 Gửi báo cáo lên SonarQube bằng Docker"
-                    docker run --rm -e SONAR_TOKEN=$DOCKER_PASS -v "$(pwd):/usr/src" sonarsource/sonar-scanner-cli -Dsonar.projectKey=crud-app -Dsonar.host.url=http://host.docker.internal:9000
-                    '''
-                }
+            withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+              sh '''
+              echo "📤 Gửi báo cáo lên SonarQube bằng Docker"
+              docker run --rm \
+                -e SONAR_TOKEN=$SONAR_TOKEN \
+                -v "$(pwd):/usr/src" \
+                sonarsource/sonar-scanner-cli \
+                -Dsonar.projectKey=crud-app \
+                -Dsonar.host.url=http://host.docker.internal:9000
+              '''
             }
+          }
         }
+      }
     }
 
     stage('3. Build Frontend') {
