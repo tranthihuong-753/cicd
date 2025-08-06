@@ -9,3 +9,8 @@ pytest
 pytest-asyncio
 httpx
 pytest-cov
+flake8 
+black 
+mypy 
+pytest 
+pytest-cov
