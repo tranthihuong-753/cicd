@@ -13,31 +13,29 @@ pipeline {
         git credentialsId: 'from-github-to-jenkins', url: 'https://github.com/tranthihuong-753/cicd.git', branch: 'main'
       }
     }
-    
+
     
     stage('SonarQube Scan') {
         steps {
             dir('backend') {
             withSonarQubeEnv("${SONARQUBE_ENV}") {
                 sh'''
+                echo "Running SonarQube analysis for backend..."
                 #python -m venv venv
                 #venv/Scripts/activate
                 python -m pip install -r requirements.txt
-                '''
-                sh '''
-                # Kiểm tra coding style
+
+                echo "Kiểm tra coding style..."
                 flake8 app || true  # Không làm fail pipeline nếu lỗi style
                 black --check app || true
                 mypy app || true    # nếu bạn đã type hinting
 
-                # Chạy test để tạo báo cáo coverage
+                echo "Chạy test để tạo báo cáo coverage..."
                 pytest --cov=./ --cov-report=xml
 
-                # Gửi báo cáo lên SonarQube
-                sonar-scanner \
-                -Dsonar.projectKey=crud-app \
-                -Dsonar.sources=. \
-                -Dsonar.python.coverage.reportPaths=coverage.xml
+                echo"Gửi báo cáo lên SonarQube"
+                sonar-scanner -Dsonar.projectKey=crud-app -Dsonar.sources=. -Dsonar.python.coverage.reportPaths=coverage.xml
+                
                 '''
             }
             }
