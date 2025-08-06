@@ -9,6 +9,7 @@ pipeline {
   }
 
   stages {
+
     stage('1. Checkout') {
       steps {
         git credentialsId: 'from-github-to-jenkins', url: 'https://github.com/tranthihuong-753/cicd.git', branch: 'main'
@@ -102,26 +103,27 @@ pipeline {
     // }
 
     stage('7. Update DockerHub Description') {
-    steps {
-        script {
-            def readmeContent = readFile('README.md').bytes.encodeBase64().toString()
-            def repo = "${DOCKERHUB_CREDENTIALS_USR}/backend"
-            
-            withCredentials([usernamePassword(
-                credentialsId: 'from-docker-to-jenkins',
-                usernameVariable: 'DOCKER_USER',
-                passwordVariable: 'DOCKER_PASS'
-            )]) {
-                sh """
-                echo "📄 Đẩy README.md lên Docker Hub"
-                curl -X PATCH https://hub.docker.com/v2/repositories/${repo}/ \
-                    -u "$DOCKER_USER:$DOCKER_PASS" \
-                    -H "Content-Type: application/json" \
-                    -d '{"full_description": "'${readmeContent}'"}'
-                """
-            }
-        }
-    }   
+      steps {
+          script {
+              def readmeContent = readFile('README.md').bytes.encodeBase64().toString()
+              def repo = "${DOCKERHUB_CREDENTIALS_USR}/backend"
+              
+              withCredentials([usernamePassword(
+                  credentialsId: 'from-docker-to-jenkins',
+                  usernameVariable: 'DOCKER_USER',
+                  passwordVariable: 'DOCKER_PASS'
+              )]) {
+                  sh """
+                  echo "📄 Đẩy README.md lên Docker Hub"
+                  curl -X PATCH https://hub.docker.com/v2/repositories/${repo}/ \
+                      -u "$DOCKER_USER:$DOCKER_PASS" \
+                      -H "Content-Type: application/json" \
+                      -d '{"full_description": "'${readmeContent}'"}'
+                  """
+              }
+          }
+      }   
+    }
 
     stage('8. Tag Git (optional)') {
       when {
@@ -141,7 +143,9 @@ pipeline {
         }
       }
     }
+    
   }
+  
 
   post {
       failure {
