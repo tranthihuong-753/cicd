@@ -10,6 +10,21 @@ pipeline {
 
   stages {
 
+    stage('0. Prepare DockerHub Credentials') {
+      steps {
+        withCredentials([usernamePassword(
+          credentialsId: 'from-docker-to-jenkins',
+          usernameVariable: 'DOCKER_USER',
+          passwordVariable: 'DOCKER_PASS'
+        )]) {
+          script {
+            env.DOCKER_USER = DOCKER_USER
+            env.DOCKER_PASS = DOCKER_PASS
+          }
+        }
+      }
+    }
+
     stage('1. Checkout') {
       steps {
         git credentialsId: 'from-github-to-jenkins', url: 'https://github.com/tranthihuong-753/cicd.git', branch: 'main'
@@ -18,11 +33,6 @@ pipeline {
 
     stage('2. SonarQube Scan') {
         steps {
-            withCredentials([usernamePassword(
-            credentialsId: 'from-docker-to-jenkins',
-            usernameVariable: 'DOCKERHUB_CREDENTIALS_USR',
-            passwordVariable: 'DOCKERHUB_CREDENTIALS_PSW'
-            )])
             dir('backend') {
                 withSonarQubeEnv("${SONARQUBE_ENV}") {
                     sh 'echo JAVA_HOME=$JAVA_HOME'
@@ -41,7 +51,7 @@ pipeline {
 
                     sh '''
                     echo "📤 Gửi báo cáo lên SonarQube bằng Docker"
-                    docker run --rm -e SONAR_TOKEN=$DOCKERHUB_CREDENTIALS_PSW -v "$(pwd):/usr/src" sonarsource/sonar-scanner-cli -Dsonar.projectKey=crud-app -Dsonar.host.url=http://host.docker.internal:9000
+                    docker run --rm -e SONAR_TOKEN=$DOCKER_PASS -v "$(pwd):/usr/src" sonarsource/sonar-scanner-cli -Dsonar.projectKey=crud-app -Dsonar.host.url=http://host.docker.internal:9000
                     '''
                 }
             }
@@ -58,36 +68,22 @@ pipeline {
     }
 
     stage('4. Build Docker Images') {
-        steps {
-            withCredentials([usernamePassword(
-            credentialsId: 'from-docker-to-jenkins',
-            usernameVariable: 'DOCKERHUB_CREDENTIALS_USR',
-            passwordVariable: 'DOCKERHUB_CREDENTIALS_PSW'
-            )]) 
-            {
+        steps {         
             sh '''
-            docker build -t ${DOCKERHUB_CREDENTIALS_USR}/backend:${VERSION} ./backend
-            docker build -t ${DOCKERHUB_CREDENTIALS_USR}/frontend:${VERSION} ./frontend
-            '''
-            }
+            docker build -t ${DOCKER_USER}/backend:${VERSION} ./backend
+            docker build -t ${DOCKER_USER}/frontend:${VERSION} ./frontend
+            '''         
         }
     }
 
     stage('5. Push Docker Images') {
         steps {
-            withCredentials([usernamePassword(
-            credentialsId: 'from-docker-to-jenkins',
-            usernameVariable: 'DOCKERHUB_CREDENTIALS_USR',
-            passwordVariable: 'DOCKERHUB_CREDENTIALS_PSW'
-            )])
-            {
             sh '''
-            echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin
-            docker push ${DOCKERHUB_CREDENTIALS_USR}/backend:${VERSION}
-            docker push ${DOCKERHUB_CREDENTIALS_USR}/frontend:${VERSION}
+            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+            docker push ${DOCKER_USER}/backend:${VERSION}
+            docker push ${DOCKER_USER}/frontend:${VERSION}
             docker logout
             '''
-            }
         }
     }
 
@@ -109,11 +105,6 @@ pipeline {
 
     stage('7. Update DockerHub Description') {
       steps {
-        withCredentials([usernamePassword(
-          credentialsId: 'from-docker-to-jenkins',
-          usernameVariable: 'DOCKER_USER',
-          passwordVariable: 'DOCKER_PASS'
-        )]) {
           script {
             def readmeContent = readFile('README.md').bytes.encodeBase64().toString()
             def repo = "${DOCKER_USER}/backend"
@@ -125,7 +116,6 @@ pipeline {
                 -H "Content-Type: application/json" \\
                 -d '{\"full_description\": \"${readmeContent}\"}'
             """
-          }
         }
       }
     }
@@ -150,7 +140,6 @@ pipeline {
     }
 
   }
-  
 
   post {
       failure {
