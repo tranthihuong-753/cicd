@@ -14,7 +14,6 @@ pipeline {
       }
     }
 
-    
     stage('SonarQube Scan') {
         steps {
             dir('backend') {
