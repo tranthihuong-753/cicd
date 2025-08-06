@@ -5,7 +5,7 @@ pipeline {
     SONARQUBE_ENV = 'SonarQubeJenkins' // bạn đã cấu hình Sonar server
     VERSION = "v${BUILD_NUMBER}"
     BRANCH_NAME = "${params.BRANCH_NAME}"
-    SONAR_TOKEN = "sqa_6df32d4501b2e71d1255ca1cd6a7e4978aa57696"
+    SONAR_TOKEN = "sqa_635740e8423141bdc81e635384a16cbb21de9693"
   }
 
   stages {
@@ -143,7 +143,7 @@ pipeline {
         }
       }
     }
-    
+
   }
   
 
