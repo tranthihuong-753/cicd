@@ -51,21 +51,21 @@ pipeline {
       }
     }
 
-    // stage('Build Docker Images') {
-    //     steps {
-    //         withCredentials([usernamePassword(
-    //         credentialsId: 'from-docker-to-jenkins',
-    //         usernameVariable: 'DOCKERHUB_CREDENTIALS_USR',
-    //         passwordVariable: 'DOCKERHUB_CREDENTIALS_PSW'
-    //         )]) 
-    //         {
-    //         sh '''
-    //         docker build -t ${DOCKERHUB_CREDENTIALS_USR}/backend:${VERSION} ./backend
-    //         docker build -t ${DOCKERHUB_CREDENTIALS_USR}/frontend:${VERSION} ./frontend
-    //         '''
-    //         }
-    //     }
-    // }
+    stage('Build Docker Images') {
+        steps {
+            withCredentials([usernamePassword(
+            credentialsId: 'from-docker-to-jenkins',
+            usernameVariable: 'DOCKERHUB_CREDENTIALS_USR',
+            passwordVariable: 'DOCKERHUB_CREDENTIALS_PSW'
+            )]) 
+            {
+            sh '''
+            docker build -t ${DOCKERHUB_CREDENTIALS_USR}/backend:${VERSION} ./backend
+            docker build -t ${DOCKERHUB_CREDENTIALS_USR}/frontend:${VERSION} ./frontend
+            '''
+            }
+        }
+    }
 
     // stage('Push Docker Images') {
     //     steps {
