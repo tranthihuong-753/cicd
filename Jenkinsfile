@@ -5,7 +5,7 @@ pipeline {
     SONARQUBE_ENV = 'SonarQubeJenkins' // bạn đã cấu hình Sonar server
     VERSION = "v${BUILD_NUMBER}"
     BRANCH_NAME = "${params.BRANCH_NAME}"
-    SONAR_TOKEN = "sqa_635740e8423141bdc81e635384a16cbb21de9693"
+    // SONAR_TOKEN = "sqa_635740e8423141bdc81e635384a16cbb21de9693"
   }
 
   stages {
@@ -18,6 +18,11 @@ pipeline {
 
     stage('2. SonarQube Scan') {
         steps {
+            withCredentials([usernamePassword(
+            credentialsId: 'from-docker-to-jenkins',
+            usernameVariable: 'DOCKERHUB_CREDENTIALS_USR',
+            passwordVariable: 'DOCKERHUB_CREDENTIALS_PSW'
+            )])
             dir('backend') {
                 withSonarQubeEnv("${SONARQUBE_ENV}") {
                     sh 'echo JAVA_HOME=$JAVA_HOME'
@@ -36,7 +41,7 @@ pipeline {
 
                     sh '''
                     echo "📤 Gửi báo cáo lên SonarQube bằng Docker"
-                    docker run --rm -e SONAR_TOKEN=$SONAR_TOKEN -v "$(pwd):/usr/src" sonarsource/sonar-scanner-cli -Dsonar.projectKey=crud-app -Dsonar.host.url=http://host.docker.internal:9000
+                    docker run --rm -e SONAR_TOKEN=$DOCKERHUB_CREDENTIALS_PSW -v "$(pwd):/usr/src" sonarsource/sonar-scanner-cli -Dsonar.projectKey=crud-app -Dsonar.host.url=http://host.docker.internal:9000
                     '''
                 }
             }
@@ -104,25 +109,25 @@ pipeline {
 
     stage('7. Update DockerHub Description') {
       steps {
+        withCredentials([usernamePassword(
+          credentialsId: 'from-docker-to-jenkins',
+          usernameVariable: 'DOCKER_USER',
+          passwordVariable: 'DOCKER_PASS'
+        )]) {
           script {
-              def readmeContent = readFile('README.md').bytes.encodeBase64().toString()
-              def repo = "${DOCKERHUB_CREDENTIALS_USR}/backend"
-              
-              withCredentials([usernamePassword(
-                  credentialsId: 'from-docker-to-jenkins',
-                  usernameVariable: 'DOCKER_USER',
-                  passwordVariable: 'DOCKER_PASS'
-              )]) {
-                  sh """
-                  echo "📄 Đẩy README.md lên Docker Hub"
-                  curl -X PATCH https://hub.docker.com/v2/repositories/${repo}/ \
-                      -u "$DOCKER_USER:$DOCKER_PASS" \
-                      -H "Content-Type: application/json" \
-                      -d '{"full_description": "'${readmeContent}'"}'
-                  """
-              }
+            def readmeContent = readFile('README.md').bytes.encodeBase64().toString()
+            def repo = "${DOCKER_USER}/backend"
+            
+            sh """
+            echo "📄 Đẩy README.md lên Docker Hub"
+            curl -X PATCH https://hub.docker.com/v2/repositories/${repo}/ \\
+                -u "${DOCKER_USER}:${DOCKER_PASS}" \\
+                -H "Content-Type: application/json" \\
+                -d '{\"full_description\": \"${readmeContent}\"}'
+            """
           }
-      }   
+        }
+      }
     }
 
     stage('8. Tag Git (optional)') {
