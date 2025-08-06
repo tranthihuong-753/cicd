@@ -127,23 +127,26 @@ pipeline {
     //   }
     // }
 
-    script {
-      def readmeContent = sh(
-        script: "base64 -w 0 README.md",
-        returnStdout: true
-      ).trim()
+    stage('7. Update DockerHub Description') {
+      steps {
+        script {
+          def readmeContent = sh(
+            script: "base64 -w 0 README.md",
+            returnStdout: true
+          ).trim()
 
-      def repo = "${env.DOCKER_USER}/backend"
-      
-      sh """
-      echo "📄 Đẩy README.md lên Docker Hub"
-      curl -X PATCH https://hub.docker.com/v2/repositories/${repo}/ \\
-          -u "${env.DOCKER_USER}:${env.DOCKER_PASS}" \\
-          -H "Content-Type: application/json" \\
-          -d '{\"full_description\": \"${readmeContent}\"}'
-      """
+          def repo = "${env.DOCKER_USER}/backend"
+          
+          sh """
+          echo "📄 Đẩy README.md lên Docker Hub"
+          curl -X PATCH https://hub.docker.com/v2/repositories/${repo}/ \\
+              -u "${env.DOCKER_USER}:${env.DOCKER_PASS}" \\
+              -H "Content-Type: application/json" \\
+              -d '{\"full_description\": \"${readmeContent}\"}'
+          """
+        }
+      }
     }
-
 
     stage('8. Tag Git (optional)') {
       when {
