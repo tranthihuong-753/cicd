@@ -4,6 +4,7 @@ pipeline {
   environment {
     SONARQUBE_ENV = 'SonarQubeJenkins' // bạn đã cấu hình Sonar server
     VERSION = "v${BUILD_NUMBER}"
+    BRANCH_NAME = "${params.BRANCH_NAME}"
   }
 
   stages {
@@ -17,10 +18,12 @@ pipeline {
         steps {
             dir('backend') {
             withSonarQubeEnv("${SONARQUBE_ENV}") {
+                sh'''
+                python -m venv venv
+                venv/Scripts/activate
+                python -m pip install -r requirements.txt
+                '''
                 sh '''
-                # Cài đặt thư viện cần thiết
-                pip install -r requirements.txt
-
                 # Kiểm tra coding style
                 flake8 app || true  # Không làm fail pipeline nếu lỗi style
                 black --check app || true
@@ -83,19 +86,19 @@ pipeline {
     //     }
     // }
 
-    // stage('Tag Git (optional)') {
-    //     when { // Nhớ dùng Multibranch Pipeline
-    //         expression { env.BRANCH_NAME == 'main' }
-    //     }
-    //     steps {
-    //         sh '''
-    //         git config user.name "tranthihuong-753"
-    //         git config user.email "dhhuongdhlt1@gmail.com"
-    //         git tag -a ${VERSION} -m "CI Build ${VERSION}"
-    //         git push origin ${VERSION}
-    //         '''
-    //     }
-    // }
+    stage('Tag Git (optional)') {
+        when { // Nhớ dùng Multibranch Pipeline
+            expression { env.BRANCH_NAME == 'main' }
+        }
+        steps {
+            sh '''
+            git config user.name "tranthihuong-753"
+            git config user.email "dhhuongdhlt1@gmail.com"
+            git tag -a ${VERSION} -m "CI Build ${VERSION}"
+            git push origin ${VERSION}
+            '''
+        }
+    }
 
   }
 
