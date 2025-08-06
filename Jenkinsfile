@@ -9,13 +9,13 @@ pipeline {
   }
 
   stages {
-    stage('Checkout') {
+    stage('1. Checkout') {
       steps {
         git credentialsId: 'from-github-to-jenkins', url: 'https://github.com/tranthihuong-753/cicd.git', branch: 'main'
       }
     }
 
-    stage('SonarQube Scan') {
+    stage('2. SonarQube Scan') {
         steps {
             dir('backend') {
                 withSonarQubeEnv("${SONARQUBE_ENV}") {
@@ -42,7 +42,7 @@ pipeline {
         }
     }
 
-    stage('Build Frontend') {
+    stage('3. Build Frontend') {
       steps {
         dir('frontend') {
           sh 'npm install'
@@ -51,7 +51,7 @@ pipeline {
       }
     }
 
-    stage('Build Docker Images') {
+    stage('4. Build Docker Images') {
         steps {
             withCredentials([usernamePassword(
             credentialsId: 'from-docker-to-jenkins',
@@ -67,7 +67,7 @@ pipeline {
         }
     }
 
-    stage('Push Docker Images') {
+    stage('5. Push Docker Images') {
         steps {
             withCredentials([usernamePassword(
             credentialsId: 'from-docker-to-jenkins',
@@ -85,20 +85,62 @@ pipeline {
         }
     }
 
-    stage('Tag Git (optional)') {
-        when { // Nhớ dùng Multibranch Pipeline
-            expression { env.BRANCH_NAME == 'main' }
-        }
-        steps {
-            sh '''
-            git config user.name "tranthihuong-753"
-            git config user.email "dhhuongdhlt1@gmail.com"
-            git tag -a ${VERSION} -m "CI Build ${VERSION}"
-            git push origin ${VERSION}
-            '''
-        }
-    }
 
+    // stage('6. Deploy to Remote Server') {
+    //   steps {
+    //     sshagent(credentials: ['from-github-to-jenkins']) {
+    //       sh '''
+    //       echo "📦 Gửi docker-compose.yml và prometheus.yml lên server"
+    //       scp -P 22001 docker-compose.yml it23@101.99.23.156:~/cicd/
+    //       scp -P 22001 -r monitoring it23@101.99.23.156:~/cicd/
+          
+    //       echo "🚀 Triển khai lại toàn bộ hệ thống"
+    //       ssh -p 22001 it23@101.99.23.156 "cd ~/cicd && docker-compose down && docker-compose pull && docker-compose up -d"
+    //       '''
+    //     }
+    //   }
+    // }
+
+    stage('7. Update DockerHub Description') {
+    steps {
+        script {
+            def readmeContent = readFile('README.md').bytes.encodeBase64().toString()
+            def repo = "${DOCKERHUB_CREDENTIALS_USR}/backend"
+            
+            withCredentials([usernamePassword(
+                credentialsId: 'from-docker-to-jenkins',
+                usernameVariable: 'DOCKER_USER',
+                passwordVariable: 'DOCKER_PASS'
+            )]) {
+                sh """
+                echo "📄 Đẩy README.md lên Docker Hub"
+                curl -X PATCH https://hub.docker.com/v2/repositories/${repo}/ \
+                    -u "$DOCKER_USER:$DOCKER_PASS" \
+                    -H "Content-Type: application/json" \
+                    -d '{"full_description": "'${readmeContent}'"}'
+                """
+            }
+        }
+    }   
+
+    stage('8. Tag Git (optional)') {
+      when {
+        expression {
+          return sh(script: "git rev-parse --abbrev-ref HEAD", returnStdout: true).trim() == "main"
+        }
+      }
+      steps {
+        sshagent(credentials: ['from-github-to-jenkins']) {
+          sh '''
+          echo "🏷️ Gắn tag ${VERSION} và đẩy lên GitHub"
+          git config user.name "tranthihuong-753"
+          git config user.email "dhhuongdhlt1@gmail.com"
+          git tag -a ${VERSION} -m "CI Build ${VERSION}"
+          git push origin ${VERSION}
+          '''
+        }
+      }
+    }
   }
 
   post {
@@ -109,5 +151,5 @@ pipeline {
       echo "✅ Build & Push done: version ${VERSION}"
       }
   }
-  
+
 }

@@ -8,7 +8,7 @@ venv\Scripts\Activate.ps1
 
 2/ Cấu trúc dự án 
 
-crud-project/
+CICD/
 
 ├── backend/
 
@@ -32,9 +32,17 @@ crud-project/
 
 │   └── requirements.txt
 
+│   └── sonar-project.properties
+
+│   └── .env 
+
 ├── frontend/
 
 │   └── [React App]
+
+├── monitoring/              
+
+│   └── prometheus.yml  
 
 ├── docker-compose.yml
 
@@ -49,11 +57,17 @@ dialect+driver://postgres:123456@db:5432/postgres
 
 4/ Chạy back FastAPI 
 
+port 8000 
+
 uvicorn app.main:app --reload
 
 Lỗi hay gặp ở chuỗi kết nối, nhớ check sự tồn tại của DB, role(user,pass) 
 
+pip freeze > requirements.txt
+
 5/ Chạy front react 
+
+port 3000 
 
 npm install 
 
@@ -78,9 +92,34 @@ docker tag <image_name>:<old_tag> <new_name>:<new_tag>
 docker tag cicd-backend:latest huongduong/myapp-frontend:latest
 
 docker push huongduong/cicd-backend:v1
+
 docker push huongduong/cicd-frontend:v1
 
-6/ Devops CI/CD
+docker pull  
+
+docker run -p ?:? n-a-m-e
+
+7/ Sona
+
+port 9000 
+
+pytest --cov=./ --cov-report=xml
+
+docker run --rm -v "$(pwd):/usr/src" sonarsource/sonar-scanner-cli
+
+8/ Prometheus 
+
+port 9099
+
+Khởi tạo đối tượng trong main 
+
+Tạo monitoring/prometheus.yml 
+
+10/ Grafana
+
+port 3000 
+
+7/ Devops CI/CD
 
 | Bước | Mục tiêu                                                | Ghi chú |
 | ---- | ------------------------------------------------------- | ------- |

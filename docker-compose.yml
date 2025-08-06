@@ -7,16 +7,20 @@ services:
       POSTGRES_DB: testdb #Postgres sẽ tạo database testdb ngay khi container được tạo
     ports:
       - "5432:5432"
+    # expose:
+    #   - "5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
       retries: 5
   backend:
-    image: huongduong/cicd-backend:v1
+    image: huongduong/cicd-backend:t1
     build: ./backend
     ports:
       - "8000:8000"
+    # expose:
+    #   - "8000"
     environment:
       - DATABASE_URL=postgresql+asyncpg://postgres:123456@db:5432/testdb
     depends_on:
@@ -24,8 +28,29 @@ services:
         condition: service_healthy
     restart: on-failure # Khởi động lại backend nếu có lỗi
   frontend:
-    image: huongduong/cicd-frontend:v1
+    image: huongduong/cicd-frontend:t1
     build: ./frontend
     ports:
       - "3000:3000"
+    expose:
+      - "3000"
     # command: npm start
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    expose:
+      - "9090"
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3001:3000"
+    expose:
+      - "3001"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    
+volumes:
+  grafana-storage:
