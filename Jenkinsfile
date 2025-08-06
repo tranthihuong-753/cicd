@@ -26,10 +26,14 @@ pipeline {
                   sh '''
                   echo "📦 Cài dependencies"
                   python -m pip install -r requirements.txt
-
+                  '''
+                  
+                  sh'''
                   echo "🧪 Chạy test và tạo báo cáo coverage"
                   pytest --cov=./ --cov-report=xml
+                  '''
 
+                  sh '''
                   echo "📤 Gửi báo cáo lên SonarQube bằng Docker"
                   docker run --rm -e SONAR_TOKEN=$SONAR_TOKEN -v "$(pwd):/usr/src" sonarsource/sonar-scanner-cli
                   '''
