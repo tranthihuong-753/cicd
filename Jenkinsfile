@@ -15,32 +15,32 @@ pipeline {
       }
     }
 
-  stage('SonarQube Scan') {
-      steps {
-          dir('backend') {
-              withSonarQubeEnv("${SONARQUBE_ENV}") {
-                  sh 'echo JAVA_HOME=$JAVA_HOME'
-                  sh 'which java'
-                  sh 'java -version'
+    stage('SonarQube Scan') {
+        steps {
+            dir('backend') {
+                withSonarQubeEnv("${SONARQUBE_ENV}") {
+                    sh 'echo JAVA_HOME=$JAVA_HOME'
+                    sh 'which java'
+                    sh 'java -version'
 
-                  sh '''
-                  echo "📦 Cài dependencies"
-                  python -m pip install -r requirements.txt
-                  '''
+                    sh '''
+                    echo "📦 Cài dependencies"
+                    python -m pip install -r requirements.txt
+                    '''
 
-                  sh'''
-                  echo "🧪 Chạy test và tạo báo cáo coverage"
-                  pytest --cov=./ --cov-report=xml
-                  '''
+                    sh'''
+                    echo "🧪 Chạy test và tạo báo cáo coverage"
+                    pytest --cov=./ --cov-report=xml
+                    '''
 
-                  sh '''
-                  echo "📤 Gửi báo cáo lên SonarQube bằng Docker"
-                  docker run --rm -e SONAR_TOKEN=$SONAR_TOKEN -v "$(pwd):/usr/src" sonarsource/sonar-scanner-cli -Dsonar.projectKey=crud-app -Dsonar.host.url=http://host.docker.internal:9000
-                  '''
-              }
-          }
-      }
-  }
+                    sh '''
+                    echo "📤 Gửi báo cáo lên SonarQube bằng Docker"
+                    docker run --rm -e SONAR_TOKEN=$SONAR_TOKEN -v "$(pwd):/usr/src" sonarsource/sonar-scanner-cli -Dsonar.projectKey=crud-app -Dsonar.host.url=http://host.docker.internal:9000
+                    '''
+                }
+            }
+        }
+    }
 
     stage('Build Frontend') {
       steps {
@@ -101,12 +101,13 @@ pipeline {
 
   }
 
-    post {
-        failure {
-        echo "❌ Build failed at stage ${STAGE_NAME}"
-        }
-        success {
-        echo "✅ Build & Push done: version ${VERSION}"
-        }
-    }
+  post {
+      failure {
+      echo "❌ Build failed at stage ${STAGE_NAME}"
+      }
+      success {
+      echo "✅ Build & Push done: version ${VERSION}"
+      }
+  }
+  
 }
