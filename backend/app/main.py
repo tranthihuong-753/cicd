@@ -1,11 +1,17 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from app import crud, schemas, models  # type: ignore
+from app import crud, schemas, models 
 from .database import SessionLocal, engine, Base
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI
+from prometheus_fastapi_instrumentator import Instrumentator 
 
 
 app = FastAPI()
+
+
+instrumentator = Instrumentator()
+instrumentator.instrument(app).expose(app)
 
 
 origins = ["http://localhost:3000"]  # cho phép React truy cập
@@ -19,6 +25,7 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup():
+    # Tạo bảng trong DB
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
@@ -60,3 +67,4 @@ async def delete_item(item_id: int, db: AsyncSession = Depends(get_db)):
     await db.delete(db_item)
     await db.commit()
     return {"message": "Deleted successfully"}
+
