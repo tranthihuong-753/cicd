@@ -5,3 +5,7 @@ asyncpg
 psycopg2-binary
 pydantic
 python-dotenv
+pytest
+pytest-asyncio
+httpx
+pytest-cov

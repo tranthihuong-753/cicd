@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from . import crud, schemas, models
+from app import crud, schemas, models # type: ignore
 from .database import SessionLocal, engine, Base
 from fastapi.middleware.cors import CORSMiddleware
 
