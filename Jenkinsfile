@@ -40,7 +40,6 @@ pipeline {
         }
     }
     
-
     // stage('Build Frontend') {
     //   steps {
     //     dir('frontend') {
