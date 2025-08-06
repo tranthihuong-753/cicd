@@ -33,7 +33,7 @@ pipeline {
                 echo "Chạy test để tạo báo cáo coverage..."
                 pytest --cov=./ --cov-report=xml
 
-                echo"Gửi báo cáo lên SonarQube"
+                echo "Gửi báo cáo lên SonarQube"
                 sonar-scanner -Dsonar.projectKey=crud-app -Dsonar.sources=. -Dsonar.python.coverage.reportPaths=coverage.xml
                 
                 '''
