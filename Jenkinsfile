@@ -5,7 +5,7 @@ pipeline {
     SONARQUBE_ENV = 'SonarQubeJenkins' // bạn đã cấu hình Sonar server
     VERSION = "v${BUILD_NUMBER}"
     BRANCH_NAME = "${params.BRANCH_NAME}"
-    SONAR_TOKEN = credentials('from-sonar-to-jenkins') 
+    SONAR_TOKEN = "sqa_6df32d4501b2e71d1255ca1cd6a7e4978aa57696"
   }
 
   stages {
@@ -27,7 +27,7 @@ pipeline {
                   echo "📦 Cài dependencies"
                   python -m pip install -r requirements.txt
                   '''
-                  
+
                   sh'''
                   echo "🧪 Chạy test và tạo báo cáo coverage"
                   pytest --cov=./ --cov-report=xml
