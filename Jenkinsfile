@@ -13,6 +13,7 @@ pipeline {
         git credentialsId: 'from-github-to-jenkins', url: 'https://github.com/tranthihuong-753/cicd.git', branch: 'main'
       }
     }
+    
     stage('SonarQube Scan') {
         steps {
             dir('backend') {
