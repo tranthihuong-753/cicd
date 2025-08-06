@@ -19,8 +19,8 @@ pipeline {
             dir('backend') {
             withSonarQubeEnv("${SONARQUBE_ENV}") {
                 sh'''
-                python -m venv venv
-                venv/Scripts/activate
+                #python -m venv venv
+                #venv/Scripts/activate
                 python -m pip install -r requirements.txt
                 '''
                 sh '''
