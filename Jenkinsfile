@@ -118,22 +118,6 @@ pipeline {
     //   }
     // }
 
-    // stage('7. Update DockerHub Description') {
-    //   steps {
-    //       script {
-    //         def readmeContent = readFile('README.md').bytes.encodeBase64().toString()
-    //         def repo = "${DOCKER_USER}/backend"            
-    //         sh """
-    //         echo "📄 Đẩy README.md lên Docker Hub"
-    //         curl -X PATCH https://hub.docker.com/v2/repositories/${repo}/ \\
-    //             -u "${DOCKER_USER}:${DOCKER_PASS}" \\
-    //             -H "Content-Type: application/json" \\
-    //             -d '{\"full_description\": \"${readmeContent}\"}'
-    //         """
-    //     }
-    //   }
-    // }
-
     stage('7. Update DockerHub Description') {
       steps {
         script {
@@ -142,8 +126,8 @@ pipeline {
           .replace("\"", "\\\"")
           .replace("\n", "\\n")
 
-          def repo1 = "${env.DOCKER_USER}/backend"
-          def repo2 = "${env.DOCKER_USER}/frontend"
+          def repo1 = "${env.DOCKER_USER}/backend:${VERSION}"
+          def repo2 = "${env.DOCKER_USER}/frontend:${VERSION}"
           
           sh """
           echo "📄 Đẩy README.md lên Docker Hub"
