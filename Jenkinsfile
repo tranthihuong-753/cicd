@@ -30,6 +30,7 @@ pipeline {
       }
     }
 
+
     stage('2. SonarQube Scan') {
       steps {
         dir('backend') {
