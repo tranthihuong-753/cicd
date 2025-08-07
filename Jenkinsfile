@@ -95,36 +95,36 @@ pipeline {
     }
 
     // stage('7. Update DockerHub Description') {
-    //   steps {    stage('6. Deploy to Remote Server') {
-      steps {
-        sshagent(credentials: ['from-github-to-jenkins']) {
-          sh '''
-          echo "📁 Tạo thư mục ~/cicd trên server (nếu chưa có)"
-          ssh -p 22001 it23@101.99.23.156 "mkdir -p ~/cicd"
+    // //   steps {    stage('6. Deploy to Remote Server') {
+    //   steps {
+    //     sshagent(credentials: ['from-github-to-jenkins']) {
+    //       sh '''
+    //       echo "📁 Tạo thư mục ~/cicd trên server (nếu chưa có)"
+    //       ssh -p 22001 it23@101.99.23.156 "mkdir -p ~/cicd"
 
-          echo "📦 Gửi các file deploy cần thiết lên server"
-          scp -P 22001 deploy/docker-compose.yml it23@101.99.23.156:~/cicd/
-          scp -P 22001 deploy/.env it23@101.99.23.156:~/cicd/
-          scp -P 22001 deploy/backend.env it23@101.99.23.156:~/cicd/
-          scp -P 22001 -r deploy/monitoring it23@101.99.23.156:~/cicd/
+    //       echo "📦 Gửi các file deploy cần thiết lên server"
+    //       scp -P 22001 deploy/docker-compose.yml it23@101.99.23.156:~/cicd/
+    //       scp -P 22001 deploy/.env it23@101.99.23.156:~/cicd/
+    //       scp -P 22001 deploy/backend.env it23@101.99.23.156:~/cicd/
+    //       scp -P 22001 -r deploy/monitoring it23@101.99.23.156:~/cicd/
 
-          echo "🚀 Triển khai hệ thống trên server từ Docker Hub"
-          ssh -p 22001 it23@101.99.23.156 << EOF
-            set -e
-            cd ~/cicd
-            export \$(cat .env | xargs)         # Load biến VERSION
-            docker-compose down
-            docker-compose pull
-            docker-compose up -d
-            docker ps
-          EOF
-          '''
-        }
-      }
-    }
-    //     script {
-    //       def readme = readFile('README.md')
-    //       .replace("\\", "\\\\")
+    //       echo "🚀 Triển khai hệ thống trên server từ Docker Hub"
+    //       ssh -p 22001 it23@101.99.23.156 << EOF
+    //         set -e
+    //         cd ~/cicd
+    //         export \$(cat .env | xargs)         # Load biến VERSION
+    //         docker-compose down
+    //         docker-compose pull
+    //         docker-compose up -d
+    //         docker ps
+    //       EOF
+    //       '''
+    //     }
+    //   }
+    // }
+    // //     script {
+    // //       def readme = readFile('README.md')
+    // //       .replace("\\", "\\\\")
     //       .replace("\"", "\\\"")
     //       .replace("\n", "\\n")
 
