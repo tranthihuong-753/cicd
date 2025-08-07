@@ -2,11 +2,10 @@ pipeline {
   agent any
 
   environment {
-    SONARQUBE_ENV = 'SonarQubeJenkins' // bạn đã cấu hình Sonar server
+    SONARQUBE_ENV = 'SonarQube' // bạn đã cấu hình Sonar server
     VERSION = "v${BUILD_NUMBER}"
     BRANCH_NAME = "${params.BRANCH_NAME}"
   }
-
 
   stages {
 
@@ -65,7 +64,6 @@ pipeline {
       }
     }
 
-
     stage('3. Build Frontend') {
       steps {
         dir('frontend') {
@@ -95,57 +93,75 @@ pipeline {
         }
     }
 
-    // stage('7. Update DockerHub Description') {
-    // //   steps {    stage('6. Deploy to Remote Server') {
-    //   steps {
-    //     sshagent(credentials: ['from-github-to-jenkins']) {
-    //       sh '''
-    //       echo "📁 Tạo thư mục ~/cicd trên server (nếu chưa có)"
-    //       ssh -p 22001 it23@101.99.23.156 "mkdir -p ~/cicd"
+    stage('6. Deploy to Remote Server') {
+      steps {
+        sshagent(credentials: ['from-github-to-jenkins']) {
+          sh '''
+          echo "📁 Tạo thư mục ~/cicd trên server (nếu chưa có)"
+          ssh -p 22001 it23@101.99.23.156 "mkdir -p ~/cicd"
 
-    //       echo "📦 Gửi các file deploy cần thiết lên server"
-    //       scp -P 22001 deploy/docker-compose.yml it23@101.99.23.156:~/cicd/
-    //       scp -P 22001 deploy/.env it23@101.99.23.156:~/cicd/
-    //       scp -P 22001 deploy/backend.env it23@101.99.23.156:~/cicd/
-    //       scp -P 22001 -r deploy/monitoring it23@101.99.23.156:~/cicd/
+          echo "📦 Gửi các file deploy cần thiết lên server"
+          scp -P 22001 deploy/docker-compose.yml it23@101.99.23.156:~/cicd/
+          scp -P 22001 deploy/.env it23@101.99.23.156:~/cicd/
+          scp -P 22001 deploy/backend.env it23@101.99.23.156:~/cicd/
+          scp -P 22001 -r deploy/monitoring it23@101.99.23.156:~/cicd/
 
-    //       echo "🚀 Triển khai hệ thống trên server từ Docker Hub"
-    //       ssh -p 22001 it23@101.99.23.156 << EOF
-    //         set -e
-    //         cd ~/cicd
-    //         export \$(cat .env | xargs)         # Load biến VERSION
-    //         docker-compose down
-    //         docker-compose pull
-    //         docker-compose up -d
-    //         docker ps
-    //       EOF
-    //       '''
-    //     }
-    //   }
-    // }
-    // //     script {
-    // //       def readme = readFile('README.md')
-    // //       .replace("\\", "\\\\")
-    //       .replace("\"", "\\\"")
-    //       .replace("\n", "\\n")
+          echo "🚀 Triển khai hệ thống trên server từ Docker Hub"
+          ssh -p 22001 it23@101.99.23.156 << EOF
+            set -e
+            cd ~/cicd
+            export \$(cat .env | xargs)         # Load biến VERSION
+            docker-compose down
+            docker-compose pull
+            docker-compose up -d
+            docker ps
+          EOF
+          '''
+        }
+      }
+    }
 
-    //       def repo1 = "${env.DOCKER_USER}/backend"
-    //       def repo2 = "${env.DOCKER_USER}/frontend"
-          
-    //       sh """
-    //       echo "📄 Đẩy README.md lên Docker Hub"
-    //       curl -X PATCH https://hub.docker.com/v2/repositories/${repo1}/ \\
-    //           -u "${env.DOCKER_USER}:${env.DOCKER_PASS}" \\
-    //           -H "Content-Type: application/json" \\
-    //           -d '{\"description\": \"${readme}\"}'
-    //       curl -X PATCH https://hub.docker.com/v2/repositories/${repo2}/ \\
-    //           -u "${env.DOCKER_USER}:${env.DOCKER_PASS}" \\
-    //           -H "Content-Type: application/json" \\
-    //           -d '{\"description\": \"${readme}\"}'
-    //       """
-    //     }
-    //   }
-    // }
+    // ✅ Kiểm tra kết nối SSH trước khi deploy
+    stage('6. SSH to Remote Server') {
+      steps {
+        sshagent(credentials: ['deploy-to-server']) {
+          sh '''
+          echo "🔐 Kiểm tra kết nối SSH tới server..."
+          ssh -o StrictHostKeyChecking=no -p 22001 it23@101.99.23.156 "hostname && uptime"
+          '''
+        }
+      }
+    }
+
+    // ✅ Triển khai lên remote server qua SSH + Docker Compose
+    stage('7. Deploy to Remote Server') {
+      steps {
+        sshagent(credentials: ['deploy-to-server']) {
+          sh '''
+          echo "📁 Tạo thư mục ~/cicd trên server (nếu chưa có)"
+          ssh -p 22001 it23@101.99.23.156 "mkdir -p ~/cicd"
+
+          echo "📦 Gửi các file deploy cần thiết lên server"
+          scp -P 22001 deploy/docker-compose.yml it23@101.99.23.156:~/cicd/
+          scp -P 22001 deploy/.env it23@101.99.23.156:~/cicd/
+          scp -P 22001 deploy/backend.env it23@101.99.23.156:~/cicd/
+          scp -P 22001 -r deploy/monitoring it23@101.99.23.156:~/cicd/
+
+          echo "🚀 Triển khai hệ thống từ Docker Hub"
+          ssh -p 22001 it23@101.99.23.156 << EOF
+            set -e
+            cd ~/cicd
+            export \$(cat .env | xargs)  # Load biến VERSION
+            docker-compose down
+            docker-compose pull
+            docker-compose up -d
+            docker ps
+          EOF
+          '''
+        }
+      }
+    }
+
 
   }
 
