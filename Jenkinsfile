@@ -1,6 +1,7 @@
 pipeline {
   agent any
 
+
   environment {
     SONARQUBE_ENV = 'SonarQubeJenkins' // bạn đã cấu hình Sonar server
     VERSION = "v${BUILD_NUMBER}"
@@ -29,7 +30,6 @@ pipeline {
         git credentialsId: 'from-github-to-jenkins', url: 'https://github.com/tranthihuong-753/cicd.git', branch: 'main'
       }
     }
-
 
     stage('2. SonarQube Scan') {
       steps {
