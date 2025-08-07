@@ -134,11 +134,11 @@ pipeline {
           curl -X PATCH https://hub.docker.com/v2/repositories/${repo1}/ \\
               -u "${env.DOCKER_USER}:${env.DOCKER_PASS}" \\
               -H "Content-Type: application/json" \\
-              -d '{\"full_description\": \"${readme}\"}'
+              -d '{\"description\": \"${readme}\"}'
           curl -X PATCH https://hub.docker.com/v2/repositories/${repo2}/ \\
               -u "${env.DOCKER_USER}:${env.DOCKER_PASS}" \\
               -H "Content-Type: application/json" \\
-              -d '{\"full_description\": \"${readme}\"}'
+              -d '{\"description\": \"${readme}\"}'
           """
         }
       }
