@@ -24,74 +24,74 @@ pipeline {
       }
     }
 
-    stage('1. Checkout') {
-      steps {
-        git credentialsId: 'from-github-to-jenkins', url: 'https://github.com/tranthihuong-753/cicd.git', branch: 'main'
-      }
-    }
+    // stage('1. Checkout') {
+    //   steps {
+    //     git credentialsId: 'from-github-to-jenkins', url: 'https://github.com/tranthihuong-753/cicd.git', branch: 'main'
+    //   }
+    // }
 
-    stage('2. SonarQube Scan') {
-      steps {
-        dir('backend') {
-          withSonarQubeEnv("${SONARQUBE_ENV}") {
-            sh 'echo JAVA_HOME=$JAVA_HOME'
-            sh 'which java'
-            sh 'java -version'
+    // stage('2. SonarQube Scan') {
+    //   steps {
+    //     dir('backend') {
+    //       withSonarQubeEnv("${SONARQUBE_ENV}") {
+    //         sh 'echo JAVA_HOME=$JAVA_HOME'
+    //         sh 'which java'
+    //         sh 'java -version'
 
-            sh '''
-            echo "📦 Cài dependencies"
-            python -m pip install -r requirements.txt
-            '''
+    //         sh '''
+    //         echo "📦 Cài dependencies"
+    //         python -m pip install -r requirements.txt
+    //         '''
 
-            sh '''
-            echo "🧪 Chạy test và tạo báo cáo coverage"
-            pytest --cov=./ --cov-report=xml
-            '''
+    //         sh '''
+    //         echo "🧪 Chạy test và tạo báo cáo coverage"
+    //         pytest --cov=./ --cov-report=xml
+    //         '''
 
-            withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-              sh '''
-              echo "📤 Gửi báo cáo lên SonarQube bằng Docker"
-              docker run --rm \
-                -e SONAR_TOKEN=$SONAR_TOKEN \
-                -v "$(pwd):/usr/src" \
-                sonarsource/sonar-scanner-cli \
-                -Dsonar.projectKey=crud-app \
-                -Dsonar.host.url=http://host.docker.internal:9000
-              '''
-            }
-          }
-        }
-      }
-    }
+    //         withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+    //           sh '''
+    //           echo "📤 Gửi báo cáo lên SonarQube bằng Docker"
+    //           docker run --rm \
+    //             -e SONAR_TOKEN=$SONAR_TOKEN \
+    //             -v "$(pwd):/usr/src" \
+    //             sonarsource/sonar-scanner-cli \
+    //             -Dsonar.projectKey=crud-app \
+    //             -Dsonar.host.url=http://host.docker.internal:9000
+    //           '''
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
 
-    stage('3. Build Frontend') {
-      steps {
-        dir('frontend') {
-          sh 'npm install'
-          sh 'npm run build'
-        }
-      }
-    }
+    // stage('3. Build Frontend') {
+    //   steps {
+    //     dir('frontend') {
+    //       sh 'npm install'
+    //       sh 'npm run build'
+    //     }
+    //   }
+    // }
 
-    stage('4. Build Docker Images') {
-        steps {         
-            sh '''
-            docker build -t ${DOCKER_USER}/backend:${VERSION} ./backend
-            docker build -t ${DOCKER_USER}/frontend:${VERSION} ./frontend
-            '''         
-        }
-    }
+    // stage('4. Build Docker Images') {
+    //     steps {         
+    //         sh '''
+    //         docker build -t ${DOCKER_USER}/backend:${VERSION} ./backend
+    //         docker build -t ${DOCKER_USER}/frontend:${VERSION} ./frontend
+    //         '''         
+    //     }
+    // }
 
-    stage('5. Push Docker Images') {
-        steps {
-            sh '''
-            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-            docker push ${DOCKER_USER}/backend:${VERSION}
-            docker push ${DOCKER_USER}/frontend:${VERSION}
-            docker logout
-            '''
-        }
-    }
+    // stage('5. Push Docker Images') {
+    //     steps {
+    //         sh '''
+    //         echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+    //         docker push ${DOCKER_USER}/backend:${VERSION}
+    //         docker push ${DOCKER_USER}/frontend:${VERSION}
+    //         docker logout
+    //         '''
+    //     }
+    // }
 
 
     // stage('6. Deploy to Remote Server') {
