@@ -7,6 +7,7 @@ pipeline {
     BRANCH_NAME = "${params.BRANCH_NAME}"
   }
 
+
   stages {
 
     stage('0. Prepare DockerHub Credentials') {
