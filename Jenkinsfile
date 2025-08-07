@@ -132,7 +132,6 @@ pipeline {
       }
     }
 
-    // ✅ Triển khai lên remote server qua SSH + Docker Compose
     stage('7. Deploy to Remote Server') {
       steps {
         sshagent(credentials: ['deploy-to-server']) {
