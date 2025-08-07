@@ -1,4 +1,4 @@
-version: "3.9"
+# version: "3.9"
 services:
   db:
     image: postgres:15
@@ -14,7 +14,7 @@ services:
       retries: 5
   backend:
     image: huongduong/backend:${VERSION:-latest}
-    build: ./backend
+    # build: ./backend
     ports:
       - "8000:8000"
     environment:
@@ -26,7 +26,7 @@ services:
 
   frontend:
     image: huongduong/frontend:${VERSION:-latest}
-    build: ./frontend
+    # build: ./frontend
     ports:
       - "3000:3000"
     expose:

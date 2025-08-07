@@ -43,6 +43,17 @@ CICD/
 ├── monitoring/              
 
 │   └── prometheus.yml  
+├── deploy/              
+
+│   ├── monitoring/              
+
+│   │   └── prometheus.yml  
+
+│   ├── .env
+
+│   ├── backend.env
+
+│   ├── docker-compose.yml 
 
 ├── docker-compose.yml
 
@@ -117,7 +128,47 @@ Tạo monitoring/prometheus.yml
 
 10/ Grafana
 
-port 3000 
+port 3000
+
+11/ ssh 1 image 
+
+ssh it23@101.99.23.156 -p 22001
+= ED25519 key fingerprint is SHA256:d1jDLs2l5V2xNeKkxlacfVTSw+UqxiQADPZNbgETdao.
+
+# Test kéo image
+docker pull yourdockerhubusername/yourimage:latest
+
+# Chạy thử
+docker run -d --name app -p 80:8000 yourdockerhubusername/yourimage:latest
+
+12/ ssh nhiều image 
+doi het localhost sang ipv4 may 
+
+ssh it23@101.99.23.156 -p 22001
+
+mkdir -p ~/cicd
+exit
+
+scp -P 22001 docker-compose.yml it23@101.99.23.156:~/cicd/
+scp -P 22001 .env it23@101.99.23.156:~/cicd/
+scp -P 22001 backend/.env it23@101.99.23.156:~/cicd/
+scp -P 22001 -r monitoring it23@101.99.23.156:~/cicd/
+
+scp -P 22001 D:\cmc\software-development\ck\cicd\deploy\docker-compose.yml it23@101.99.23.156:~/cicd/
+scp -P 22001 D:\cmc\software-development\ck\cicd\deploy\.env it23@101.99.23.156:~/cicd/
+scp -P 22001 D:\cmc\software-development\ck\cicd\deploy\backend.env it23@101.99.23.156:~/cicd/
+scp -P 22001 -r D:\cmc\software-development\ck\cicd\deploy\monitoring it23@101.99.23.156:~/cicd/
+
+
+ssh it23@101.99.23.156 -p 22001 << EOF
+cd ~/cicd
+export $(cat .env | xargs)        # load biến VERSION
+docker-compose down
+docker-compose pull
+docker-compose up -d
+EOF
+
+docker ps
 
 7/ Devops CI/CD
 
@@ -134,4 +185,6 @@ port 3000
 | 9️⃣  | Pull & run image trên server thành công                 | ✔️      |
 | 🔟   | Domain + HTTPS (nếu cần)                                | ➖       |
 | 🔁   | **Grafana (giám sát hệ thống sau khi chạy)**            | ✅ Sau   |
+
+
 
