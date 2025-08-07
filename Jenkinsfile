@@ -2,7 +2,7 @@ pipeline {
   agent any
 
   environment {
-    SONARQUBE_ENV = 'SonarQube' // bạn đã cấu hình Sonar server
+    SONARQUBE_ENV = 'SonarQubeJenkins' // bạn đã cấu hình Sonar server
     VERSION = "v${BUILD_NUMBER}"
     BRANCH_NAME = "${params.BRANCH_NAME}"
   }
@@ -37,7 +37,6 @@ pipeline {
             sh 'echo JAVA_HOME=$JAVA_HOME'
             sh 'which java'
             sh 'java -version'
-
 
             sh '''
             echo "📦 Cài dependencies"
@@ -122,7 +121,6 @@ pipeline {
       }
     }
 
-    // ✅ Kiểm tra kết nối SSH trước khi deploy
     stage('6. SSH to Remote Server') {
       steps {
         sshagent(credentials: ['deploy-to-server']) {
@@ -162,6 +160,7 @@ pipeline {
         }
       }
     }
+
 
   }
 
