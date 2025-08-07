@@ -15,7 +15,7 @@ services:
       timeout: 5s
       retries: 5
   backend:
-    image: huongduong/cicd-backend:t1
+    image: huongduong/cicd-backend:${VERSION}
     build: ./backend
     ports:
       - "8000:8000"
@@ -28,7 +28,7 @@ services:
         condition: service_healthy
     restart: on-failure # Khởi động lại backend nếu có lỗi
   frontend:
-    image: huongduong/cicd-frontend:t1
+    image: huongduong/cicd-frontend:${VERSION}
     build: ./frontend
     ports:
       - "3000:3000"

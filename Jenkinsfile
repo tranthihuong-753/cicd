@@ -5,7 +5,6 @@ pipeline {
     SONARQUBE_ENV = 'SonarQubeJenkins' // bạn đã cấu hình Sonar server
     VERSION = "v${BUILD_NUMBER}"
     BRANCH_NAME = "${params.BRANCH_NAME}"
-    // SONAR_TOKEN = "sqa_635740e8423141bdc81e635384a16cbb21de9693"
   }
 
   stages {
@@ -99,12 +98,21 @@ pipeline {
     //   steps {
     //     sshagent(credentials: ['from-github-to-jenkins']) {
     //       sh '''
+    //       echo "${VERSION}" > version.env
+    //       scp -P 22001 version.env it23@101.99.23.156:~/cicd/
+
     //       echo "📦 Gửi docker-compose.yml và prometheus.yml lên server"
     //       scp -P 22001 docker-compose.yml it23@101.99.23.156:~/cicd/
     //       scp -P 22001 -r monitoring it23@101.99.23.156:~/cicd/
-          
+
     //       echo "🚀 Triển khai lại toàn bộ hệ thống"
-    //       ssh -p 22001 it23@101.99.23.156 "cd ~/cicd && docker-compose down && docker-compose pull && docker-compose up -d"
+    //       ssh -p 22001 it23@101.99.23.156 "
+    //         cd ~/cicd &&
+    //         export $(cat version.env) &&
+    //         docker-compose down &&
+    //         docker-compose pull &&
+    //         docker-compose up -d
+    //       "
     //       '''
     //     }
     //   }
@@ -114,8 +122,7 @@ pipeline {
     //   steps {
     //       script {
     //         def readmeContent = readFile('README.md').bytes.encodeBase64().toString()
-    //         def repo = "${DOCKER_USER}/backend"
-            
+    //         def repo = "${DOCKER_USER}/backend"            
     //         sh """
     //         echo "📄 Đẩy README.md lên Docker Hub"
     //         curl -X PATCH https://hub.docker.com/v2/repositories/${repo}/ \\
@@ -130,39 +137,25 @@ pipeline {
     stage('7. Update DockerHub Description') {
       steps {
         script {
-          def readmeContent = sh(
-            script: "base64 -w 0 README.md",
-            returnStdout: true
-          ).trim()
+          def readme = readFile('README.md')
+          .replace("\\", "\\\\")
+          .replace("\"", "\\\"")
+          .replace("\n", "\\n")
 
-          def repo = "${env.DOCKER_USER}/backend"
+          def repo1 = "${env.DOCKER_USER}/backend"
+          def repo2 = "${env.DOCKER_USER}/frontend"
           
           sh """
           echo "📄 Đẩy README.md lên Docker Hub"
-          curl -X PATCH https://hub.docker.com/v2/repositories/${repo}/ \\
+          curl -X PATCH https://hub.docker.com/v2/repositories/${repo1}/ \\
               -u "${env.DOCKER_USER}:${env.DOCKER_PASS}" \\
               -H "Content-Type: application/json" \\
-              -d '{\"full_description\": \"${readmeContent}\"}'
+              -d '{\"full_description\": \"${readme}\"}'
+          curl -X PATCH https://hub.docker.com/v2/repositories/${repo2}/ \\
+              -u "${env.DOCKER_USER}:${env.DOCKER_PASS}" \\
+              -H "Content-Type: application/json" \\
+              -d '{\"full_description\": \"${readme}\"}'
           """
-        }
-      }
-    }
-
-    stage('8. Tag Git (optional)') {
-      when {
-        expression {
-          return sh(script: "git rev-parse --abbrev-ref HEAD", returnStdout: true).trim() == "main"
-        }
-      }
-      steps {
-        sshagent(credentials: ['from-github-to-jenkins']) {
-          sh '''
-          echo "🏷️ Gắn tag ${VERSION} và đẩy lên GitHub"
-          git config user.name "tranthihuong-753"
-          git config user.email "dhhuongdhlt1@gmail.com"
-          git tag -a ${VERSION} -m "CI Build ${VERSION}"
-          git push origin ${VERSION}
-          '''
         }
       }
     }
