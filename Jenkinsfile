@@ -65,6 +65,7 @@ pipeline {
       }
     }
 
+
     stage('3. Build Frontend') {
       steps {
         dir('frontend') {
