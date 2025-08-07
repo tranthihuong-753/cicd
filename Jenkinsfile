@@ -64,6 +64,7 @@ pipeline {
       }
     }
 
+
     stage('3. Build Frontend') {
       steps {
         dir('frontend') {
@@ -93,7 +94,8 @@ pipeline {
         }
     }
 
-    stage('6. Deploy to Remote Server') {
+    // stage('7. Update DockerHub Description') {
+    //   steps {    stage('6. Deploy to Remote Server') {
       steps {
         sshagent(credentials: ['from-github-to-jenkins']) {
           sh '''
@@ -120,9 +122,6 @@ pipeline {
         }
       }
     }
-
-    // stage('7. Update DockerHub Description') {
-    //   steps {
     //     script {
     //       def readme = readFile('README.md')
     //       .replace("\\", "\\\\")
