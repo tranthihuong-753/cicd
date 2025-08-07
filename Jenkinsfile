@@ -38,6 +38,7 @@ pipeline {
             sh 'which java'
             sh 'java -version'
 
+
             sh '''
             echo "📦 Cài dependencies"
             python -m pip install -r requirements.txt
@@ -161,7 +162,6 @@ pipeline {
         }
       }
     }
-
 
   }
 
