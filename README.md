@@ -1,12 +1,55 @@
-# cicd
+# 🚀 CI/CD Project - FastAPI + React + PostgreSQL
 
-1/ Chuẩn bị môi trường ảo 
+## 👤 Thông tin
+- **Gmail**: tthuong.work.378@gmail.com 
+- **Docker Hub**: [huongduong](https://hub.docker.com/repositories/huongduong)  
 
-python -m venv venv 
+---
 
-venv\Scripts\Activate.ps1
+## 📖 Giới thiệu dự án
 
-2/ Cấu trúc dự án 
+Đây là một dự án **web fullstack** với:
+- **Frontend**: React  
+- **Backend**: FastAPI  
+- **Database**: PostgreSQL  
+
+Hệ thống tích hợp CI/CD với:
+- **Docker**: Container hóa frontend + backend + DB  
+- **Jenkins**: Tự động build, test, deploy  
+- **SonarQube**: Kiểm tra chất lượng code  
+- **Prometheus + Grafana**: Monitoring sau deploy  
+
+👉 Dự án này đã hoàn thiện pipeline CI/CD.  
+Người dùng có thể **clone repo, chạy local hoặc docker-compose** để trải nghiệm ứng dụng.
+
+## 🌐 Tech Stack
+
+| Layer        | Technology                |
+|--------------|---------------------------|
+| Frontend     | ReactJS (port `3000`)     |
+| Backend      | FastAPI (port `8000`)     |
+| Database     | PostgreSQL (port `5432`)  |
+| CI/CD        | Jenkins + Docker Hub      |
+| Code Quality | SonarQube (port `9000`)   |
+| Monitoring   | Prometheus (9099) + Grafana (3000) |
+| Deploy       | Docker Compose + SSH Remote |
+
+---
+
+## ⚡ How It Works
+
+1. **Push code lên GitHub**  
+2. **Jenkins Pipeline** chạy build & test  
+3. **SonarQube Scan** để phân tích chất lượng code  
+4. **Docker Build & Push** image lên Docker Hub  
+5. **SSH Server** & `docker-compose up -d` để deploy  
+6. **Prometheus + Grafana** giám sát hệ thống realtime  
+
+📌 *Khi có code mới → Jenkins tự động build → Server auto deploy → Monitoring online.*
+
+---
+
+## 📂 Project Structure
 
 CICD/
 
@@ -60,117 +103,162 @@ CICD/
 ├── sonar-project.properties
 
 
-3/ Chuỗi kết nối tới DB postgre 
+---
 
-dialect+driver://username:password@host:port/database
+## 🛠 Yêu cầu hệ thống
 
-dialect+driver://postgres:123456@db:5432/postgres
+- Python **3.9+**
+- Node.js **16+**
+- Docker & Docker Compose
+- Git
 
-4/ Chạy back FastAPI 
+---
 
-port 8000 
+## 📥 Hướng dẫn cài đặt
 
-uvicorn app.main:app --reload
+Clone repo:
 
-Lỗi hay gặp ở chuỗi kết nối, nhớ check sự tồn tại của DB, role(user,pass) 
+```bash
+git clone [https://github.com/huongduong/cicd-project.git](https://github.com/tranthihuong-753/cicd.git)
+cd cicd
+```
 
-pip freeze > requirements.txt
+---
 
-5/ Chạy front react 
+## 📦 1. Chạy Local
 
-port 3000 
+### Backend (FastAPI)
+```bash
+cd backend
+python -m venv venv
+venv\Scripts\activate   # Windows
+source venv/bin/activate # Linux/Mac
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
+```
+Truy cập: http://localhost:8000/docs
 
-npm install 
+---
 
-npm start 
+### Frontend (React)
+```bash
+cd frontend
+npm install
+npm start
+```
+Truy cập: http://localhost:3000
 
-6/ Công nghệ 
+---
 
-Fontend react viev 
+### Database (PostgreSQL)
+Cập nhật chuỗi kết nối trong `backend/.env`:
 
-Backend FastAPI 
+```
+DATABASE_URL=postgresql://postgres:123456@localhost:5432/postgres
+```
 
-DB Postgres 
+---
 
-7/ Docker 
+## 🐳 2. Chạy bằng Docker
 
+### Build & Run
+```bash
 docker-compose up --build
+```
 
+Ứng dụng sẽ chạy với các dịch vụ:
+- Backend: http://localhost:8000  
+- Frontend: http://localhost:3000  
+- SonarQube: http://localhost:9000  
+- Prometheus: http://localhost:9099  
+- Grafana: http://localhost:3000 (port có thể đổi nếu trùng)
+
+### Stop
+```bash
 docker-compose down -v
+```
 
-docker tag <image_name>:<old_tag> <new_name>:<new_tag>
+---
 
-docker tag cicd-backend:latest huongduong/myapp-frontend:latest
+## 🔍 3. SonarQube (Code Quality)
 
-docker push huongduong/cicd-backend:v1
-
-docker push huongduong/cicd-frontend:v1
-
-docker pull  
-
-docker run -p ?:? n-a-m-e
-
-7/ Sona
-
-port 9000 
-
+1. Chạy test coverage:
+```bash
 pytest --cov=./ --cov-report=xml
+```
 
+2. Scan bằng Docker:
+```bash
 docker run --rm -v "$(pwd):/usr/src" sonarsource/sonar-scanner-cli
+```
 
-8/ Prometheus 
+---
 
-port 9099
+## 📊 4. Monitoring
 
-Khởi tạo đối tượng trong main 
+- **Prometheus**: cấu hình trong `monitoring/prometheus.yml` (port **9099**)  
+- **Grafana**: chạy trên port **3000**, truy cập dashboard qua browser  
 
-Tạo monitoring/prometheus.yml 
+---
 
-10/ Grafana
+## 🌐 5. Deploy lên server
 
-port 3000
-
-11/ ssh 1 image 
-
+### Bước 1: SSH vào server
+```bash
 ssh it23@101.99.23.156 -p 22001
-= ED25519 key fingerprint is SHA256:d1jDLs2l5V2xNeKkxlacfVTSw+UqxiQADPZNbgETdao.
+```
 
-# Test kéo image
-docker pull yourdockerhubusername/yourimage:latest
+### Bước 2: Copy file deploy
+```bash
+scp -P 22001 deploy/* it23@101.99.23.156:~/cicd/
+```
 
-# Chạy thử
-docker run -d --name app -p 80:8000 yourdockerhubusername/yourimage:latest
-
-12/ ssh nhiều image 
-doi het localhost sang ipv4 may 
-
-ssh it23@101.99.23.156 -p 22001
-
-mkdir -p ~/cicd
-exit
-
-scp -P 22001 docker-compose.yml it23@101.99.23.156:~/cicd/
-scp -P 22001 .env it23@101.99.23.156:~/cicd/
-scp -P 22001 backend/.env it23@101.99.23.156:~/cicd/
-scp -P 22001 -r monitoring it23@101.99.23.156:~/cicd/
-
-scp -P 22001 D:\cmc\software-development\ck\cicd\deploy\docker-compose.yml it23@101.99.23.156:~/cicd/
-scp -P 22001 D:\cmc\software-development\ck\cicd\deploy\.env it23@101.99.23.156:~/cicd/
-scp -P 22001 D:\cmc\software-development\ck\cicd\deploy\backend.env it23@101.99.23.156:~/cicd/
-scp -P 22001 -r D:\cmc\software-development\ck\cicd\deploy\monitoring it23@101.99.23.156:~/cicd/
-
-
+### Bước 3: Deploy
+```bash
 ssh it23@101.99.23.156 -p 22001 << EOF
 cd ~/cicd
-export $(cat .env | xargs)        # load biến VERSION
+export $(cat .env | xargs)
 docker-compose down
 docker-compose pull
 docker-compose up -d
 EOF
+```
 
+### Bước 4: Kiểm tra
+```bash
 docker ps
+```
 
-7/ Devops CI/CD
+---
+
+## 🔄 6. CI/CD Pipeline
+
+Quy trình CI/CD của dự án:
+
+1. Developer **push code** lên GitHub  
+2. Jenkins **trigger pipeline**:  
+   - Build & test code  
+   - Kiểm tra chất lượng bằng SonarQube  
+   - Build Docker image  
+   - Push image lên Docker Hub  
+3. Jenkins **SSH sang server**:  
+   - Pull image mới  
+   - Restart container bằng docker-compose  
+4. Monitoring bằng **Prometheus + Grafana**  
+
+---
+
+## ✅ Trải nghiệm sản phẩm
+
+Sau khi deploy, người dùng có thể truy cập:
+- **Frontend**: http://<server-ip>:3000  
+- **API docs** (FastAPI Swagger): http://<server-ip>:8000/docs  
+- **SonarQube**: http://<server-ip>:9000  
+- **Grafana**: http://<server-ip>:3000  
+
+---
+
+## Devops CI/CD
 
 | Bước | Mục tiêu                                                | Ghi chú |
 | ---- | ------------------------------------------------------- | ------- |
@@ -185,6 +273,18 @@ docker ps
 | 9️⃣  | Pull & run image trên server thành công                 | ✔️      |
 | 🔟   | Domain + HTTPS (nếu cần)                                | ➖       |
 | 🔁   | **Grafana (giám sát hệ thống sau khi chạy)**            | ✅ Sau   |
+
+---
+## 📧 Liên hệ
+
+- Email: huong.tran@example.com  
+- GitHub Issues: [tạo issue](https://github.com/huongduong/cicd-project/issues)  
+- Docker Hub: [huongduong](https://hub.docker.com/u/huongduong)  
+
+---
+
+> ℹ️ README này dành cho **người dùng & developer** muốn chạy thử hoặc triển khai ứng dụng.  
+> Nếu bạn chỉ muốn **deploy nhanh** trên server, xem mục [Deploy lên server](#-5-deploy-lên-server).
 
 
 
